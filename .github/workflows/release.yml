@@ -1,0 +1,94 @@
+name: Build and verify dispatch releases
+on:
+  push:
+    tags: ['v*']
+    branches: ['experiment/assertion-check']
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  package:
+    name: Check API and export a release
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install test environment
+        run: python -m pip install -r requirements-test.txt
+      - name: Verify submission behavior
+        run: |
+          mkdir -p diagnostics
+          python lab.py test --timeout 45 --junit diagnostics/pytest.xml 2>&1 | tee diagnostics/pytest.log
+      - name: Package tested image
+        run: |
+          mkdir -p archive cached
+          tag="$GITHUB_REF_NAME"
+          if [[ "$GITHUB_REF_TYPE" != tag ]]; then tag=branch-check; fi
+          docker build --label "org.opencontainers.image.revision=$GITHUB_SHA" -t "dispatch-lab:$tag" .
+          docker image inspect --format '{{.Id}}' "dispatch-lab:$tag" > archive/image-id.txt
+          printf '%s\n' "$tag" > archive/release.txt
+          docker save "dispatch-lab:$tag" -o image.tar
+          gzip -n -1 -c image.tar > archive/image.tar.gz
+          (cd archive && sha256sum image.tar.gz) > archive/image.sha256
+          base="$(awk 'NR==1 { print $2 }' Dockerfile)"
+          docker pull "$base"
+          docker save "$base" -o base.tar
+          python scripts/cache_archive.py pack base.tar image.tar cached
+          cp archive/*.txt archive/image.sha256 cached/
+      - name: Archive complete release
+        if: github.ref_type == 'tag'
+        uses: actions/upload-artifact@v6
+        with:
+          name: image-${{ github.ref_name }}
+          path: archive/
+          if-no-files-found: error
+          compression-level: 0
+      - name: Upload cached-layer bundle
+        if: github.ref_type == 'tag'
+        uses: actions/upload-artifact@v6
+        with:
+          name: cached-${{ github.ref_name }}
+          path: cached/
+          if-no-files-found: error
+          compression-level: 0
+      - name: Publish test results
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: pytest-results
+          path: diagnostics/
+          if-no-files-found: warn
+
+  retain:
+    name: Publish verified archive to Releases
+    needs: package
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      actions: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          name: image-${{ github.ref_name }}
+          path: deliverable/
+      - name: Verify archive and publish
+        run: |
+          (cd deliverable && sha256sum -c image.sha256)
+          gh release create "$GITHUB_REF_NAME" deliverable/image.tar.gz deliverable/image.sha256 deliverable/image-id.txt deliverable/release.txt \
+            --verify-tag --title "Submission dispatch $GITHUB_REF_NAME" \
+            --notes "Verified image from https://github.com/$GH_REPO/actions/runs/$GITHUB_RUN_ID."
