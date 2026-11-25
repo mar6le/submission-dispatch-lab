@@ -1,0 +1,10 @@
+mar6le ~ % curl -fsSi --max-time 4 http://127.0.0.1:8381/submissions/290
+HTTP/1.1 200 OK
+Server: gunicorn
+Date: Wed, 25 Nov 2026 12:31:32 GMT
+Connection: close
+Content-Type: application/json
+Content-Length: 76
+X-Request-Id: 999db236e71f48a5b7dae5fc457f5e9c
+
+{"group_code":"SE-31","id":290,"submission_key":"dispatch-2511-canary-090"}

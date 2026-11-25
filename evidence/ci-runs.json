@@ -1,0 +1,39 @@
+{
+  "v1": {
+    "url": "https://github.com/mar6le/submission-dispatch-lab/actions/runs/45614093605",
+    "conclusion": "success",
+    "headBranch": "v1.2.0",
+    "headSha": "ac23af362cbd65b923840df3a887ab1ecff35833",
+    "steps": {
+      "Verify submission behavior": "success",
+      "Package tested image": "success",
+      "Archive complete release": "success"
+    },
+    "image_id": "sha256:a46a09d11ba614be7ac2e6dd5cd808136cd1ca03e8716bbed685488879e089f2",
+    "archive_sha256": "57ebb600057a2599c48d51e0e0baf42acade3a53ada920a62b5caa352a47b614"
+  },
+  "v2": {
+    "url": "https://github.com/mar6le/submission-dispatch-lab/actions/runs/45614141865",
+    "conclusion": "success",
+    "headBranch": "v2.2.0",
+    "headSha": "f785c26e560867d1bc16030f49224ff44c15982e",
+    "steps": {
+      "Verify submission behavior": "success",
+      "Package tested image": "success",
+      "Archive complete release": "success"
+    },
+    "image_id": "sha256:3e84f0b6a08fb887b31fa998b006981dc0adc911f61b049e9d9a20847ae99b9b",
+    "archive_sha256": "af41594dc1d738e939d80b5571fdc23c9dd6eb1f5a4a7b792d2109ea959fe1d7"
+  },
+  "failure": {
+    "url": "https://github.com/mar6le/submission-dispatch-lab/actions/runs/45614147386",
+    "conclusion": "failure",
+    "headBranch": "experiment/assertion-check",
+    "headSha": "34ba583bd0ee627bd35f0cde3cf09bcf3d7d8d09",
+    "steps": {
+      "Verify submission behavior": "failure",
+      "Package tested image": "skipped",
+      "Archive complete release": "skipped"
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "attempt": "90",
+  "version": "v2",
+  "submission_key": "dispatch-2511-canary-090",
+  "status": "503",
+  "latency_ms": "9.463584",
+  "request_id": "0de0c59381c346b4b9cb50d89791bd0d",
+  "submission_id": "290",
+  "exception": ""
+}
